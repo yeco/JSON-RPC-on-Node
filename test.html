@@ -1,0 +1,268 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>JSON-RPC</title>
+	<meta name="generator" content="TextMate http://macromates.com/">
+ 	
+	<style type="text/css" media="screen">
+	  body {
+	    font-family: Verdana;
+	    font-size: 13px;
+      line-height:0.8em;	    
+	  }
+	  
+	  h2 {
+	    font-size: 16px;
+      margin-top: 10px;
+	  }
+	  
+	  h3 {
+	    font-size: 15px;
+	    margin-bottom: 5px;
+	  }
+	  
+    th {
+      font-size: 13px;
+      padding: 0px;
+    }
+
+    #result {
+      line-height: 1.5em;
+    }
+	  
+	</style>
+	
+	<script type="text/javascript" charset="utf-8">
+	  var validResponses = {
+	    '{"method": "note", "params": ["user1", "we"], "id": null}' : 
+	      'Notification send!',
+      '{"method": "echo", "params": ["Hello all!"], "id": 99}' : 
+        '{"result":"Hello all!","error":null,"id":99}',
+      '{"method": "add", "params": [1, 2], "id": 111}' : 
+        '{"result":3,"error":null,"id":111}',
+      '{"method": "pwd", "params": [], "id": 58}' : 
+        '{"result":"/Users/mw/Documents/1und1/workspace/node\\n","error":null,"id":58}',
+      'xxx{"method": "ls", "params": [], "id": 58}' : 
+        '{"result":null,"error":{"code":-32700,"message":"Parse error."},"id":null}',
+      '{"method": "echo", params: [], "id": 58}' : 
+        '{"result":null,"error":{"code":-32602,"message":"Invalid params."},"id":58}',
+      '{"method": "ls", "id": 58}' : 
+        '{"result":null,"error":{"code":-32600,"message":"Invalid Request."},"id":58}',
+      '{"method": "xyz", params: [], "id": 58}' : 
+        '{"result":null,"error":{"code":-32601,"message":"Method not found."},"id":58}',
+        
+      '{"jsonrpc": "2.0", "method": "add", "params": [42, 23], "id": 1}' : 
+        '{"jsonrpc":"2.0","result":65,"id":1}',
+      '{"jsonrpc": "2.0", "method": "note", "params": [42, 23], "id": null}' : 
+        'Notification send!',
+      '{"jsonrpc": "2.0", "method": "pwd", "params": [], "id": 58}' : 
+        '{"jsonrpc":"2.0","result":"/Users/mw/Documents/1und1/workspace/node\\n","id":58}',        
+      '{"jsonrpc": "2.0", "method": "foobar", "params": [], "id": "1"}' : 
+        '{"jsonrpc":"2.0","error":{"code":-32601,"message":"Method not found."},"id":"1"}',
+      '{"jsonrpc": "2.0", "method": "foobar, "params": "bar", "baz]' : 
+        '{"jsonrpc":"2.0","error":{"code":-32700,"message":"Parse error."},"id":null}',
+      '[1,2,3]' : 
+        '{"jsonrpc":"2.0","error":{"code":-32600,"message":"Invalid Request."},"id":null}',
+      '[{"jsonrpc": "2.0", "method": "add", "params": [1, 2], "id": 1}, {"jsonrpc": "2.0", "method": "add", "params": [2, 3], "id": 2}]' : 
+        '[{"jsonrpc":"2.0","result":3,"id":1},{"jsonrpc":"2.0","result":5,"id":2}]',
+      '{"jsonrpc": "2.0", "method": "add", "params": {a: 1, b: 2}, "id": 1}' : 
+        '{"jsonrpc":"2.0","result":3,"id":1}',
+      '[{"jsonrpc": "2.0", "method": "pwd", "params": [], "id": 1}, {"jsonrpc": "2.0", "method": "add", "params": [2, 3], "id": 2}]' : 
+        '[{"jsonrpc":"2.0","result":"/Users/mw/Documents/1und1/workspace/node\\n","id":1},{"jsonrpc":"2.0","result":5,"id":2}]',
+      '[{"jsonrpc": "2.0", "method": "pwd", "params": [], "id": 1}, {"jsonrpc": "2.0", "method": "affe", "params": [2, 3], "id": 2}]' : 
+        '[{"jsonrpc":"2.0","result":"/Users/mw/Documents/1und1/workspace/node\\n","id":1},{"jsonrpc":"2.0","error":{"code":-32601,"message":"Method not found."},"id":2}]',
+      '[{"jsonrpc": "2.0", "method": "add", "params": [1,2], "id": "1"}, {"jsonrpc": "2.0", "method": "note", "params": [7, 12], "id": null}, {"jsonrpc": "2.0", "method": "echo", "params": ["huhu"], "id": "2"}, {"foo": "boo"}, {"jsonrpc": "2.0", "method": "add", "params": {"a": 3, "b": 12}, "id": "5"}, {"jsonrpc": "2.0", "method": "pwd", "params": [], "id": "9"} ]' : 
+        '[{"jsonrpc":"2.0","result":3,"id":"1"},{"jsonrpc":"2.0","result":"huhu","id":"2"},{"jsonrpc":"2.0","error":{"code":-32600,"message":"Invalid Request."},"id":null},{"jsonrpc":"2.0","result":15,"id":"5"},{"jsonrpc":"2.0","result":"/Users/mw/Documents/1und1/workspace/node\\n","id":"9"}]'
+	  } 
+	
+	
+	  function sendPost() {
+      var value = document.getElementById("postData").value;
+      __sendPost(value);
+	  }
+	  
+	  
+	  function __sendPost(data) {
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "http://localhost:8000/", true);
+      xhr.setRequestHeader("Content-type", "application/json-rpc");
+      xhr.setRequestHeader("Content-length", data.lenth);
+      xhr.setRequestHeader("Connection", "close");
+      send(xhr, data);	    
+	  }
+	  
+	  
+	  function sendGet() {
+      var params = "?" + "method=" + document.getElementById("method").value +
+        "&params=" + document.getElementById("params").value +
+        "&id=" + document.getElementById("id").value;
+      
+        __sendGet(params);
+	  }
+	  
+	  
+	  function __sendGet(params) {
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "http://localhost:8000/" + params, true);
+      xhr.setRequestHeader("Content-type", "application/json-rpc");
+      send(xhr);	    
+	  }
+	  
+	  function send (xhr, data) {
+	    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+          document.getElementById("result").innerHTML = (xhr.responseText);
+        } else if (xhr.readyState == 4 && xhr.status == 204) {
+          document.getElementById("result").innerHTML = ("Notification send!");          
+        } else if (xhr.readyState == 4 && (
+          xhr.status == 500 ||
+          xhr.status == 400 ||
+          xhr.status == 404
+        )) {
+          document.getElementById("result").innerHTML = xhr.responseText;
+        }
+        if (xhr.readyState == 4) {
+          var valid = validResponses[data];
+          if (document.getElementById("result").innerHTML === valid) {
+            document.getElementById("result").style.backgroundColor = "#33FF33";
+          } else {
+            document.getElementById("result").style.backgroundColor = "#FF3333";
+            document.getElementById("result").innerHTML += "<br>Expected:<br>" + valid;
+          }
+        }
+      }
+      xhr.send(data);
+	  }
+	  
+	  function filin(button) {
+	    var value = button.value;
+      // set post data
+      document.getElementById("postData").value = value;
+      sendPost();
+	  }
+	</script>
+</head>
+<body>
+  <h2>Requests</h2>
+  <table border="0" cellspacing="5" cellpadding="5" style="width: 500px">
+    <tr><th>GET</th><th>POST</th></tr>
+    <tr>
+      <td>
+        <p><label for="method">method</label>: <input type="text" id="method" value="echo" id="method"></p>
+        <p><label for="params">params</label>: <input type="text" id="params" value="['abc']" id="params"></p>
+        <p><label for="id">id</label>: <input type="text" id="id" value="99" id="id"></p>
+        <p><input type="checkbox" name="jsonrpc" value="2.0">JSON-RPC 2.0<br></p>
+        <p><input type="submit" value="&rarr;" onClick="sendGet()"></p>
+      </td>
+      <td> 
+        <p>
+          <textarea id="postData" cols="30" rows="4">{"method": "echo", "params": ["abc"], "id": "99"}</textarea>
+        </p>
+        <p><input type="submit" value="&rarr;" onClick="sendPost()"></p>
+      </td>
+    </tr> 
+  </table>
+  <h3>Results</h3>
+  <input type="button" value="clear" onclick="document.getElementById('result').innerHTML = '';">
+  <div id="result"></div>
+  <table>
+    <tr>
+      <td valign="top">
+        
+        <h2>Test-Requests (POST, v1.0)</h2>
+        <table>
+          <tr>
+            <td>Notification:</td>
+            <td><input onclick="filin(this)" type='button' value='{"method": "note", "params": ["user1", "we"], "id": null}'></td>
+          </tr>
+          <tr>
+            <td>Echo:</td>
+            <td><input onclick="filin(this)" type='button' value='{"method": "echo", "params": ["Hello all!"], "id": 99}'></td>
+          </tr>
+          <tr>
+            <td>Add:</td>
+            <td><input onclick="filin(this)" type='button' value='{"method": "add", "params": [1, 2], "id": 111}'></td>
+          </tr>
+          <tr>      
+            <td>Async:</td>
+            <td><input onclick="filin(this)" type='button' value='{"method": "pwd", "params": [], "id": 58}'></td>
+          </tr>
+          <tr>      
+            <td style="color: red;">Parse Error:</td>
+            <td><input onclick="filin(this)" type='button' value='xxx{"method": "ls", "params": [], "id": 58}'></td>
+          </tr>
+          <tr>      
+            <td style="color: red;">Invalid Request:</td>
+            <td><input onclick="filin(this)" type='button' value='{"method": "ls", "id": 58}'></td>
+          </tr>
+          <tr>      
+            <td style="color: red;">Method Not Found:</td>
+            <td><input onclick="filin(this)" type='button' value='{"method": "xyz", params: [], "id": 58}'></td>
+          </tr>
+          <tr>      
+            <td style="color: red;">Invalid Params:</td>
+            <td><input onclick="filin(this)" type='button' value='{"method": "echo", params: [], "id": 58}'></td>
+          </tr>    
+        </table>
+        
+      <td/>
+      <td valign="top">
+        
+        <h2>Test-Requests (POST, v2.0)</h2>
+        <table>
+          <tr>
+            <td>Position Parameter:</td>
+            <td><input onclick="filin(this)" type='button' value='{"jsonrpc": "2.0", "method": "add", "params": [42, 23], "id": 1}'></td>
+          </tr>
+          <tr>
+            <td>Named parameters:</td>
+            <td><input onclick="filin(this)" type='button' value='{"jsonrpc": "2.0", "method": "add", "params": {a: 1, b: 2}, "id": 1}'></td>
+          </tr>
+          <tr>
+            <td>Notification:</td>
+            <td><input onclick="filin(this)" type='button' value='{"jsonrpc": "2.0", "method": "note", "params": [42, 23], "id": null}'></td>
+          </tr>
+          <tr>      
+            <td>Async:</td>
+            <td><input onclick="filin(this)" type='button' value='{"jsonrpc": "2.0", "method": "pwd", "params": [], "id": 58}'></td>
+          </tr>          
+          <tr>
+            <td style="color: red;">Method Not Found:</td>
+            <td><input onclick="filin(this)" type='button' value='{"jsonrpc": "2.0", "method": "foobar", "params": [], "id": "1"}'></td>
+          </tr>   
+          <tr>
+            <td style="color: red;">Invalid JSON:</td>
+            <td><input onclick="filin(this)" type='button' value='{"jsonrpc": "2.0", "method": "foobar, "params": "bar", "baz]'></td>
+          </tr> 
+          <tr>      
+            <td style="color: red;">Invalid Request:</td>
+            <td><input onclick="filin(this)" type='button' value='[1,2,3]'></td>
+          </tr>
+          <tr>
+            <td>Batch:</td>
+            <td><input onclick="filin(this)" type='button' value='[{"jsonrpc": "2.0", "method": "add", "params": [1, 2], "id": 1}, {"jsonrpc": "2.0", "method": "add", "params": [2, 3], "id": 2}]'></td>
+          </tr>
+          <tr>
+            <td>Batch (async):</td>
+            <td><input onclick="filin(this)" type='button' value='[{"jsonrpc": "2.0", "method": "pwd", "params": [], "id": 1}, {"jsonrpc": "2.0", "method": "add", "params": [2, 3], "id": 2}]'></td>
+          </tr>
+          <tr>
+            <td>Batch (with error):</td>
+            <td><input onclick="filin(this)" type='button' value='[{"jsonrpc": "2.0", "method": "pwd", "params": [], "id": 1}, {"jsonrpc": "2.0", "method": "affe", "params": [2, 3], "id": 2}]'></td>
+          </tr>
+          <tr>
+            <td>Batch (huge):</td>
+            <td><input onclick="filin(this)" type='button' value='[{"jsonrpc": "2.0", "method": "add", "params": [1,2], "id": "1"}, {"jsonrpc": "2.0", "method": "note", "params": [7, 12], "id": null}, {"jsonrpc": "2.0", "method": "echo", "params": ["huhu"], "id": "2"}, {"foo": "boo"}, {"jsonrpc": "2.0", "method": "add", "params": {"a": 3, "b": 12}, "id": "5"}, {"jsonrpc": "2.0", "method": "pwd", "params": [], "id": "9"} ]'></td>
+          </tr>          
+                   
+        </table>
+            
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
